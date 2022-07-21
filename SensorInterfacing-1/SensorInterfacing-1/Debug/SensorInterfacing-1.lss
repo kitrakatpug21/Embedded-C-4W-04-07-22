@@ -1,0 +1,119 @@
+
+SensorInterfacing-1.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0000009a  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  000000ee  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000030  00000000  00000000  000000ee  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000120  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000028  00000000  00000000  0000015c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   00000600  00000000  00000000  00000184  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 00000578  00000000  00000000  00000784  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   00000213  00000000  00000000  00000cfc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  00000034  00000000  00000000  00000f10  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    00000324  00000000  00000000  00000f44  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_ranges 00000018  00000000  00000000  00001268  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   8:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  10:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  14:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  18:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  1c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  20:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  24:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  28:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  2c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  30:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  34:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  38:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  3c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  40:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  44:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  48:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  4c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  50:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d4 e0       	ldi	r29, 0x04	; 4
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+  60:	0e 94 3e 00 	call	0x7c	; 0x7c <main>
+  64:	0c 94 4b 00 	jmp	0x96	; 0x96 <_exit>
+
+00000068 <__bad_interrupt>:
+  68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000006c <ADC_GetResult>:
+#define F_CPU 8000000UL
+#include <util/delay.h>
+
+uint16_t ADC_GetResult()
+{
+	ADCSRA = ADCSRA | 0b01000000; // ADSC = 1
+  6c:	86 b1       	in	r24, 0x06	; 6
+  6e:	80 64       	ori	r24, 0x40	; 64
+  70:	86 b9       	out	0x06, r24	; 6
+	while ((ADCSRA & (0b00010000))==0); // until ADIF is zero, wait here and let the result generate
+  72:	34 9b       	sbis	0x06, 4	; 6
+  74:	fe cf       	rjmp	.-4      	; 0x72 <ADC_GetResult+0x6>
+	// once ADCSRA-> ADIF == 1, loop will break and now we can use the result;
+	return ADC;
+  76:	84 b1       	in	r24, 0x04	; 4
+  78:	95 b1       	in	r25, 0x05	; 5
+}
+  7a:	08 95       	ret
+
+0000007c <main>:
+
+
+int main(void)
+{
+	DDRC = 0b11111111;
+  7c:	8f ef       	ldi	r24, 0xFF	; 255
+  7e:	84 bb       	out	0x14, r24	; 20
+	DDRD = 0b00000011;
+  80:	83 e0       	ldi	r24, 0x03	; 3
+  82:	81 bb       	out	0x11, r24	; 17
+    // Analog to Digital Conversion
+	ADMUX = 0b01000000; // REF=01, LAR=0, MUX=00000
+  84:	80 e4       	ldi	r24, 0x40	; 64
+  86:	87 b9       	out	0x07, r24	; 7
+	ADCSRA = 0b10000110; // ADEN=1, ADSC=0, ADATE=0, ADIF=0, ADIE=0, PS2-0=110 (/64)
+  88:	86 e8       	ldi	r24, 0x86	; 134
+  8a:	86 b9       	out	0x06, r24	; 6
+    while (1) 
+    {
+		uint16_t result = ADC_GetResult();
+  8c:	0e 94 36 00 	call	0x6c	; 0x6c <ADC_GetResult>
+		PORTC = result;
+  90:	85 bb       	out	0x15, r24	; 21
+		PORTD = result>>8;
+  92:	92 bb       	out	0x12, r25	; 18
+  94:	fb cf       	rjmp	.-10     	; 0x8c <main+0x10>
+
+00000096 <_exit>:
+  96:	f8 94       	cli
+
+00000098 <__stop_program>:
+  98:	ff cf       	rjmp	.-2      	; 0x98 <__stop_program>

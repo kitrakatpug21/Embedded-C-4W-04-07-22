@@ -1,0 +1,157 @@
+
+SensorInterfacing-2.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000000ca  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  0000011e  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000030  00000000  00000000  0000011e  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000150  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000028  00000000  00000000  0000018c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   000005fd  00000000  00000000  000001b4  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 00000578  00000000  00000000  000007b1  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   00000225  00000000  00000000  00000d29  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  00000034  00000000  00000000  00000f50  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    00000324  00000000  00000000  00000f84  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_loc    00000054  00000000  00000000  000012a8  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_ranges 00000018  00000000  00000000  000012fc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   8:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  10:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  14:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  18:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  1c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  20:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  24:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  28:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  2c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  30:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  34:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  38:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  3c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  40:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  44:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  48:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  4c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  50:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d4 e0       	ldi	r29, 0x04	; 4
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+  60:	0e 94 3e 00 	call	0x7c	; 0x7c <main>
+  64:	0c 94 63 00 	jmp	0xc6	; 0xc6 <_exit>
+
+00000068 <__bad_interrupt>:
+  68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000006c <ADC_GetResult>:
+#define F_CPU 8000000UL
+#include <util/delay.h>
+
+uint16_t ADC_GetResult()
+{
+	ADCSRA = ADCSRA | 0b01000000; // ADSC = 1
+  6c:	86 b1       	in	r24, 0x06	; 6
+  6e:	80 64       	ori	r24, 0x40	; 64
+  70:	86 b9       	out	0x06, r24	; 6
+	while ((ADCSRA & (0b00010000))==0); // until ADIF is zero, wait here and let the result generate
+  72:	34 9b       	sbis	0x06, 4	; 6
+  74:	fe cf       	rjmp	.-4      	; 0x72 <ADC_GetResult+0x6>
+	// once ADCSRA-> ADIF == 1, loop will break and now we can use the result;
+	return ADC;
+  76:	84 b1       	in	r24, 0x04	; 4
+  78:	95 b1       	in	r25, 0x05	; 5
+}
+  7a:	08 95       	ret
+
+0000007c <main>:
+
+
+int main(void)
+{
+	DDRC = 0b11000011;// motors
+  7c:	83 ec       	ldi	r24, 0xC3	; 195
+  7e:	84 bb       	out	0x14, r24	; 20
+    // Analog to Digital Conversion
+	ADMUX = 0b01000000; // REF=01, LAR=0, MUX=00000
+  80:	80 e4       	ldi	r24, 0x40	; 64
+  82:	87 b9       	out	0x07, r24	; 7
+	ADCSRA = 0b10000110; // ADEN=1, ADSC=0, ADATE=0, ADIF=0, ADIE=0, PS2-0=110 (/64)
+  84:	86 e8       	ldi	r24, 0x86	; 134
+  86:	86 b9       	out	0x06, r24	; 6
+    while (1) 
+    {
+		uint16_t result = ADC_GetResult();
+  88:	0e 94 36 00 	call	0x6c	; 0x6c <ADC_GetResult>
+		if (result <= 175)
+  8c:	80 3b       	cpi	r24, 0xB0	; 176
+  8e:	91 05       	cpc	r25, r1
+  90:	10 f4       	brcc	.+4      	; 0x96 <main+0x1a>
+		{
+			PORTC = 0b00000000; // all motors will turn off
+  92:	15 ba       	out	0x15, r1	; 21
+  94:	f9 cf       	rjmp	.-14     	; 0x88 <main+0xc>
+		}
+		else if (result > 175 && result <= 399)
+  96:	9c 01       	movw	r18, r24
+  98:	20 5b       	subi	r18, 0xB0	; 176
+  9a:	31 09       	sbc	r19, r1
+  9c:	20 3e       	cpi	r18, 0xE0	; 224
+  9e:	31 05       	cpc	r19, r1
+  a0:	18 f4       	brcc	.+6      	; 0xa8 <main+0x2c>
+		{
+			PORTC = 0b00000001; // motor1 will turn on , motor2 will turn off
+  a2:	81 e0       	ldi	r24, 0x01	; 1
+  a4:	85 bb       	out	0x15, r24	; 21
+  a6:	f0 cf       	rjmp	.-32     	; 0x88 <main+0xc>
+		}
+		else if (result > 399 && result <= 799)
+  a8:	9c 01       	movw	r18, r24
+  aa:	20 59       	subi	r18, 0x90	; 144
+  ac:	31 40       	sbci	r19, 0x01	; 1
+  ae:	20 39       	cpi	r18, 0x90	; 144
+  b0:	31 40       	sbci	r19, 0x01	; 1
+  b2:	18 f4       	brcc	.+6      	; 0xba <main+0x3e>
+		{
+			PORTC = 0b01000000; // motor2 will turn on , motor1 will turn off
+  b4:	80 e4       	ldi	r24, 0x40	; 64
+  b6:	85 bb       	out	0x15, r24	; 21
+  b8:	e7 cf       	rjmp	.-50     	; 0x88 <main+0xc>
+		}
+		else if (result > 799)
+  ba:	80 32       	cpi	r24, 0x20	; 32
+  bc:	93 40       	sbci	r25, 0x03	; 3
+  be:	20 f3       	brcs	.-56     	; 0x88 <main+0xc>
+		{
+			PORTC = 0b01000001;  // all motors will turn on
+  c0:	81 e4       	ldi	r24, 0x41	; 65
+  c2:	85 bb       	out	0x15, r24	; 21
+  c4:	e1 cf       	rjmp	.-62     	; 0x88 <main+0xc>
+
+000000c6 <_exit>:
+  c6:	f8 94       	cli
+
+000000c8 <__stop_program>:
+  c8:	ff cf       	rjmp	.-2      	; 0xc8 <__stop_program>
